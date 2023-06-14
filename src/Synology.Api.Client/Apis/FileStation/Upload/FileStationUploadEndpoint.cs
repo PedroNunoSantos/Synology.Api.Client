@@ -78,35 +78,34 @@ namespace Synology.Api.Client.Apis.FileStation.Upload
             return SendRequest(fileContent, destination, overwrite);
         }
 
-        private Task<FileStationUploadResponse> SendRequest(StreamContent fileContent, string destination, bool overwrite)
+        private async Task<FileStationUploadResponse> SendRequest(StreamContent fileContent, string destination, bool overwrite)
         {
             var boundary = Guid.NewGuid().ToString();
 
-            using (var formData = new MultipartFormDataContent(boundary))
+            using var formData = new MultipartFormDataContent(boundary);
+            // The request will fail if there are quotes around the boundary value
+            formData.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
+            formData.Headers.ContentType.Parameters.Add(new NameValueHeaderValue("boundary", boundary));
+
+            var overwriteValue = overwrite ? "true" : "false";
+            if (_apiInfo.Version >= 3)
             {
-                // The request will fail if there are quotes around the boundary value
-                formData.Headers.ContentType = new MediaTypeHeaderValue("multipart/form-data");
-                formData.Headers.ContentType.Parameters.Add(new NameValueHeaderValue("boundary", boundary));
+                overwriteValue = overwrite ? "overwrite" : "skip";
+            }
 
-                var overwriteValue = overwrite ? "true" : "false";
-                if (_apiInfo.Version >= 3)
-                {
-                    overwriteValue = overwrite ? "overwrite" : "skip";
-                }
+            formData.Add(GetStringContent("api", _apiInfo.Name));
+            formData.Add(GetStringContent("version", _apiInfo.Version.ToString()));
+            formData.Add(GetStringContent("method", "upload"));
+            formData.Add(GetStringContent("path", destination));
+            formData.Add(GetStringContent("overwrite", overwriteValue));
+            //formData.Add(GetStringContent("create_parents", "true/false"));
 
-                formData.Add(GetStringContent("api", _apiInfo.Name));
-                formData.Add(GetStringContent("version", _apiInfo.Version.ToString()));
-                formData.Add(GetStringContent("method", "upload"));
-                formData.Add(GetStringContent("path", destination));
-                formData.Add(GetStringContent("overwrite", overwriteValue));
-                //formData.Add(GetStringContent("create_parents", "true/false"));
+            //prevent ObjectDisposedException
+            await fileContent.ReadAsByteArrayAsync();
+            formData.Add(fileContent);
 
-                //prevent ObjectDisposedException
-                //await fileContent.LoadIntoBufferAsync();
-                formData.Add(fileContent);
+            return await _synologyHttpClient.PostAsync<FileStationUploadResponse>(_apiInfo, "upload", formData, _session);
 
-                return _synologyHttpClient.PostAsync<FileStationUploadResponse>(_apiInfo, "upload", formData, _session);
-            };
         }
 
         private StringContent GetStringContent(string name, string value)

@@ -1,22 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net6.0;net7.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 		<Authors>Paulo Lemos Neto</Authors>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<Version>0.0.1</Version>
+		<Version>0.3.50</Version>
 		<Description>.NET/C# client for the Synology DSM API</Description>
 		<PackageProjectUrl>https://github.com/plneto/Synology.Api.Client</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/plneto/Synology.Api.Client</RepositoryUrl>
 		<RepositoryType>Git</RepositoryType>
 		<PackageTags>synology dsm api client diskstation</PackageTags>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.Net.Http.Json" Version="7.0.0" />
-		<PackageReference Include="System.IO.Abstractions" Version="19.1.18" />
+		<PackageReference Include="System.Net.Http.Json" Version="7.0.1" />
+		<PackageReference Include="System.IO.Abstractions" Version="19.2.29" />
 	</ItemGroup>
 
 </Project>
